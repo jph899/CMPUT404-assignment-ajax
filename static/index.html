@@ -39,7 +39,12 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
             try {
                 if (xhr.status==200) {
                     //XXX: parse some JSON from the request!
+                    var data = JSON.parse(xhr.responseText);
+                    
                     //XXX: Pass the data to the callback!
+                    if (callback != null) {
+                        callback(data);
+                    }
                 }
             } 
             catch(e) {
@@ -48,8 +53,16 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
         }
     };
     //XXX: POST to a URL
+    xhr.open("POST", url);
+
     //XXX: set the mimetype and the accept headers!
     // Remember to use application/json !
+    // http://stackoverflow.com/questions/6418220/javascript-send-json-object-with-ajax
+    // send headers
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(JSON.stringify(objects));
+    
 }
 
 
@@ -137,8 +150,12 @@ function getPosition(e) {
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
-    //XXX: Send a XHTML Request that updates the entity you just  modified!
+    //XXX: Send a XHTML Request that updates the entity you just modified!
 
+    // http://www.w3schools.com/jsref/jsref_encodeuricomponent.asp
+    // send data about entity 
+    url = "http://127.0.0.1:5000/entity/" + encodeURIComponent(entity);
+    sendJSONXMLHTTPRequest(url, data, null);
 }
 
 var counter = 0;
@@ -262,13 +279,18 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
+    url = "http://127.0.0.1:5000/world";
+    sendJSONXMLHTTPRequest(url, null, function(data) {
+        // update world with new data then draw it
+        world = data;
+        // reset drawNext to be true
+        drawNextFrame();
+    });
     drawFrame();
 }
 
 // 30 frames per second
 setInterval( update, 1000/30.0);
-
-
 
     </script>
 </body>
