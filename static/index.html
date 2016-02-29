@@ -38,12 +38,10 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
         if (xhr.readyState==4) {
             try {
                 if (xhr.status==200) {
-                    //XXX: parse some JSON from the request!
-                    var data = JSON.parse(xhr.responseText);
-                    
+                    //XXX: parse some JSON from the request!     
                     //XXX: Pass the data to the callback!
                     if (callback != null) {
-                        callback(data);
+                        callback(JSON.parse(xhr.responseText));
                     }
                 }
             } 
@@ -58,7 +56,7 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
     //XXX: set the mimetype and the accept headers!
     // Remember to use application/json !
     // http://stackoverflow.com/questions/6418220/javascript-send-json-object-with-ajax
-    // send headers
+    // send headers and then the objects
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(objects));
@@ -154,7 +152,7 @@ function addEntity(entity, data) {
 
     // http://www.w3schools.com/jsref/jsref_encodeuricomponent.asp
     // send data about entity 
-    url = "http://127.0.0.1:5000/entity/" + encodeURIComponent(entity);
+    url = "http://127.0.0.1:5000/entity/" + entity;
     sendJSONXMLHTTPRequest(url, data, null);
 }
 
@@ -280,12 +278,25 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
     url = "http://127.0.0.1:5000/world";
-    sendJSONXMLHTTPRequest(url, null, function(data) {
-        // update world with new data then draw it
-        world = data;
-        // reset drawNext to be true
-        drawNextFrame();
-    });
+    var xhr = newXMLHttpRequest();
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+            try {
+                if (xhr.status == 200) {
+                    world = JSON.parse(xhr.responseText);
+                    drawNextFrame();
+                }
+            }
+            catch(e) {
+                alert('Error: ', e.name);
+            }
+        }
+    }
+
+    xhr.open("GET", url);
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.send(null);
+
     drawFrame();
 }
 
