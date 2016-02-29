@@ -56,7 +56,7 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
     //XXX: set the mimetype and the accept headers!
     // Remember to use application/json !
     // http://stackoverflow.com/questions/6418220/javascript-send-json-object-with-ajax
-    // send headers and then the objects
+    // send headers
     xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.send(JSON.stringify(objects));
@@ -70,7 +70,7 @@ world = {};
 function drawCircle(context,entity) {
     with(context) {
         beginPath();              
-        lineWidth = 3;
+        lineWidth = 10;
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
@@ -259,44 +259,32 @@ mouse = (function() {
     return self;
 })();
 
+
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'blue'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'white'});
 });
 
 mouse.mouseuppers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'red'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'white'});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'green',
-                          'radius':10});
+    addEntityWithoutName({'x':x,'y':y,'colour':'white',
+                          'radius':1});
 });
 
 
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
     url = "http://127.0.0.1:5000/world";
-    var xhr = newXMLHttpRequest();
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            try {
-                if (xhr.status == 200) {
-                    world = JSON.parse(xhr.responseText);
-                    drawNextFrame();
-                }
-            }
-            catch(e) {
-                alert('Error: ', e.name);
-            }
-        }
-    }
-
-    xhr.open("GET", url);
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.send(null);
-
+    sendJSONXMLHTTPRequest(url, null, function(data) {
+        // update world with new data then draw it
+        world = data;
+        // reset drawNext to be true
+        drawNextFrame();
+    });
     drawFrame();
 }
 
